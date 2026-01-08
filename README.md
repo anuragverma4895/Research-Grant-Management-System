@@ -31,23 +31,6 @@ https://github.com/anuragverma4895/Research-Grant-Management-System
 
 ---
 
-## 📂 Project Structure
-
-Research-Grant-Management-System/
-├── ER Digram.png
-├── SQL Queries.txt
-├── index.php
-├── admin_dashboard.php
-├── grant_application.php
-├── grant_valuation_panel.php
-├── update_status.php
-├── db_connection.php
-├── script.js
-├── style.css
-└── README.md
-
----
-
 ## ⚙️ How It Works
 
 1. Users submit research grant applications through the application form.
