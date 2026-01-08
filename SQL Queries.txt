@@ -1,0 +1,72 @@
+CREATE TABLE Researchers (
+    researcher_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(255) UNIQUE,
+    phone VARCHAR(15),
+    institution VARCHAR(100),
+    department VARCHAR(100),
+    research_area VARCHAR(100)
+);
+
+CREATE TABLE Funding_Agencies (
+    funding_agency_id INT PRIMARY KEY AUTO_INCREMENT,
+    agency_name VARCHAR(255),
+    contact_info TEXT,
+    funding_area VARCHAR(100),
+    agency_type VARCHAR(50)
+);
+
+CREATE TABLE Grant_Applications (
+    application_id INT PRIMARY KEY AUTO_INCREMENT,
+    researcher_id INT,
+    grant_title VARCHAR(255),
+    grant_description TEXT,
+    grant_amount_requested DECIMAL(15, 2),
+    application_status VARCHAR(50),
+    submission_date DATE,
+    funding_agency_id INT,
+    FOREIGN KEY (researcher_id) REFERENCES Researchers(researcher_id),
+    FOREIGN KEY (funding_agency_id) REFERENCES Funding_Agencies(funding_agency_id)
+);
+
+CREATE TABLE Reviewers (
+    reviewer_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(255) UNIQUE,
+    phone VARCHAR(15),
+    institution VARCHAR(100),
+    specialization VARCHAR(100)
+);
+
+CREATE TABLE Grant_Reviews (
+    review_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT,
+    reviewer_id INT,
+    review_score INT,
+    review_comments TEXT,
+    review_date DATE,
+    FOREIGN KEY (application_id) REFERENCES Grant_Applications(application_id),
+    FOREIGN KEY (reviewer_id) REFERENCES Reviewers(reviewer_id)
+);
+
+CREATE TABLE Grants (
+    grant_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT,
+    grant_amount_awarded DECIMAL(15, 2),
+    award_date DATE,
+    funding_agency_id INT,
+    award_status VARCHAR(50),
+    FOREIGN KEY (application_id) REFERENCES Grant_Applications(application_id),
+    FOREIGN KEY (funding_agency_id) REFERENCES Funding_Agencies(funding_agency_id)
+);
+
+CREATE TABLE Award_Payments (
+    payment_id INT PRIMARY KEY AUTO_INCREMENT,
+    grant_id INT,
+    payment_amount DECIMAL(15, 2),
+    payment_date DATE,
+    payment_status VARCHAR(50),
+    FOREIGN KEY (grant_id) REFERENCES Grants(grant_id)
+);
