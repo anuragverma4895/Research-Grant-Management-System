@@ -1,0 +1,195 @@
+-- ==========================================
+-- RESEARCH GRANT MANAGEMENT SYSTEM DATABASE
+-- ==========================================
+
+-- Drop existing tables if any (OPTIONAL - use with caution)
+-- DROP TABLE IF EXISTS Award_Payments, Grants, Grant_Reviews, Grant_Applications, Users, Reviewers, Funding_Agencies, Researchers;
+
+-- 1. Researchers Table
+CREATE TABLE IF NOT EXISTS Researchers (
+    researcher_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(15),
+    institution VARCHAR(200),
+    department VARCHAR(150),
+    research_area VARCHAR(150),
+    qualification VARCHAR(100),
+    experience_years INT,
+    profile_image VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Funding Agencies Table
+CREATE TABLE IF NOT EXISTS Funding_Agencies (
+    funding_agency_id INT PRIMARY KEY AUTO_INCREMENT,
+    agency_name VARCHAR(255) NOT NULL,
+    contact_email VARCHAR(255),
+    contact_phone VARCHAR(15),
+    address TEXT,
+    funding_area VARCHAR(150),
+    agency_type VARCHAR(50),
+    website VARCHAR(255),
+    total_budget DECIMAL(20, 2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Users Table (Authentication)
+CREATE TABLE IF NOT EXISTS Users (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    role ENUM('admin', 'user') NOT NULL,
+    researcher_id INT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    last_login TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (researcher_id) REFERENCES Researchers(researcher_id) ON DELETE CASCADE
+);
+
+-- 4. Grant Applications Table
+CREATE TABLE IF NOT EXISTS Grant_Applications (
+    application_id INT PRIMARY KEY AUTO_INCREMENT,
+    researcher_id INT NOT NULL,
+    grant_title VARCHAR(255) NOT NULL,
+    grant_description TEXT NOT NULL,
+    grant_amount_requested DECIMAL(15, 2) NOT NULL,
+    application_status ENUM('Submitted', 'Under Review', 'Approved', 'Rejected', 'On Hold') DEFAULT 'Submitted',
+    submission_date DATE NOT NULL,
+    funding_agency_id INT NOT NULL,
+    project_duration_months INT,
+    priority_level ENUM('High', 'Medium', 'Low') DEFAULT 'Medium',
+    admin_comments TEXT,
+    documents_uploaded VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (researcher_id) REFERENCES Researchers(researcher_id) ON DELETE CASCADE,
+    FOREIGN KEY (funding_agency_id) REFERENCES Funding_Agencies(funding_agency_id) ON DELETE CASCADE
+);
+
+-- 5. Reviewers Table
+CREATE TABLE IF NOT EXISTS Reviewers (
+    reviewer_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(15),
+    institution VARCHAR(200),
+    specialization VARCHAR(150),
+    experience_years INT,
+    rating DECIMAL(3, 2) DEFAULT 0.00,
+    total_reviews INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Grant Reviews Table
+CREATE TABLE IF NOT EXISTS Grant_Reviews (
+    review_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT NOT NULL,
+    reviewer_id INT NOT NULL,
+    review_score INT CHECK(review_score BETWEEN 1 AND 10),
+    review_comments TEXT,
+    review_date DATE NOT NULL,
+    recommendation ENUM('Strongly Approve', 'Approve', 'Neutral', 'Reject', 'Strongly Reject'),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES Grant_Applications(application_id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewer_id) REFERENCES Reviewers(reviewer_id) ON DELETE CASCADE
+);
+
+-- 7. Grants Table (Awarded Grants)
+CREATE TABLE IF NOT EXISTS Grants (
+    grant_id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT NOT NULL,
+    grant_amount_awarded DECIMAL(15, 2) NOT NULL,
+    award_date DATE NOT NULL,
+    funding_agency_id INT NOT NULL,
+    award_status ENUM('Active', 'Completed', 'Cancelled', 'On Hold') DEFAULT 'Active',
+    start_date DATE,
+    end_date DATE,
+    milestones TEXT,
+    completion_percentage DECIMAL(5, 2) DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES Grant_Applications(application_id) ON DELETE CASCADE,
+    FOREIGN KEY (funding_agency_id) REFERENCES Funding_Agencies(funding_agency_id) ON DELETE CASCADE
+);
+
+-- 8. Award Payments Table
+CREATE TABLE IF NOT EXISTS Award_Payments (
+    payment_id INT PRIMARY KEY AUTO_INCREMENT,
+    grant_id INT NOT NULL,
+    payment_amount DECIMAL(15, 2) NOT NULL,
+    payment_date DATE NOT NULL,
+    payment_status ENUM('Pending', 'Completed', 'Failed', 'Cancelled') DEFAULT 'Pending',
+    payment_method VARCHAR(50),
+    transaction_id VARCHAR(100),
+    payment_milestone VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (grant_id) REFERENCES Grants(grant_id) ON DELETE CASCADE
+);
+
+-- 9. Notifications Table
+CREATE TABLE IF NOT EXISTS Notifications (
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    message TEXT NOT NULL,
+    is_read TINYINT(1) DEFAULT 0,
+    notification_type ENUM('Application', 'Payment', 'Review', 'System') DEFAULT 'System',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- ==========================================
+-- INSERT SAMPLE DATA
+-- ==========================================
+
+-- Insert Sample Researchers
+INSERT INTO Researchers (first_name, last_name, email, phone, institution, department, research_area, qualification, experience_years) VALUES
+('Dr. Rajesh', 'Kumar', 'rajesh.kumar@university.edu', '9876543210', 'IIT Delhi', 'Computer Science', 'Artificial Intelligence', 'Ph.D.', 10),
+('Dr. Priya', 'Sharma', 'priya.sharma@university.edu', '9876543211', 'IIT Bombay', 'Biotechnology', 'Genetic Engineering', 'Ph.D.', 8),
+('Dr. Amit', 'Patel', 'amit.patel@university.edu', '9876543212', 'IIT Madras', 'Mechanical Engineering', 'Robotics', 'Ph.D.', 12),
+('Dr. Sneha', 'Reddy', 'sneha.reddy@university.edu', '9876543213', 'IIT Kanpur', 'Physics', 'Quantum Computing', 'Ph.D.', 6),
+('Dr. Vikram', 'Singh', 'vikram.singh@university.edu', '9876543214', 'IIT Kharagpur', 'Chemistry', 'Nanotechnology', 'Ph.D.', 9);
+
+-- Insert Sample Funding Agencies
+INSERT INTO Funding_Agencies (agency_name, contact_email, contact_phone, address, funding_area, agency_type, website, total_budget) VALUES
+('Department of Science & Technology', 'info@dst.gov.in', '011-26590000', 'New Delhi, India', 'Science & Technology', 'Government', 'https://dst.gov.in', 50000000.00),
+('Indian Council of Medical Research', 'icmr@icmr.gov.in', '011-26588980', 'New Delhi, India', 'Medical Research', 'Government', 'https://icmr.gov.in', 30000000.00),
+('Council of Scientific & Industrial Research', 'csir@csir.res.in', '011-23710618', 'New Delhi, India', 'Industrial Research', 'Government', 'https://csir.res.in', 45000000.00),
+('University Grants Commission', 'ugc@ugc.ac.in', '011-23604446', 'New Delhi, India', 'Higher Education', 'Government', 'https://ugc.ac.in', 25000000.00),
+('Bill & Melinda Gates Foundation', 'info@gatesfoundation.org', '+1-206-709-3100', 'Seattle, USA', 'Global Health', 'Private', 'https://gatesfoundation.org', 100000000.00);
+
+-- Insert Admin User
+-- Password: AdminSecure@2025
+INSERT INTO Users (username, password, email, role) VALUES
+('admin', '$2y$10$vZ3zYQXqN5xH8oK9pL2wXe7K8FGHjN2mP4qRsT6uV8wX0yZ2aB4cD', 'admin@grantmanagement.com', 'admin');
+
+-- Insert Sample User Accounts (linked to researchers)
+-- Password for all: User@123
+INSERT INTO Users (username, password, email, role, researcher_id) VALUES
+('rajesh_kumar', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'rajesh.kumar@university.edu', 'user', 1),
+('priya_sharma', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'priya.sharma@university.edu', 'user', 2),
+('amit_patel', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'amit.patel@university.edu', 'user', 3),
+('sneha_reddy', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'sneha.reddy@university.edu', 'user', 4),
+('vikram_singh', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'vikram.singh@university.edu', 'user', 5);
+
+-- Insert Sample Grant Applications
+INSERT INTO Grant_Applications (researcher_id, grant_title, grant_description, grant_amount_requested, application_status, submission_date, funding_agency_id, project_duration_months, priority_level) VALUES
+(1, 'AI-Based Healthcare Diagnostics', 'Developing AI models for early disease detection using medical imaging', 500000.00, 'Submitted', '2025-01-15', 1, 24, 'High'),
+(2, 'Gene Therapy for Rare Diseases', 'Research on CRISPR-based gene editing techniques', 750000.00, 'Under Review', '2025-01-20', 2, 36, 'High'),
+(3, 'Autonomous Robotic Systems', 'Development of self-learning industrial robots', 600000.00, 'Approved', '2025-01-10', 3, 18, 'Medium'),
+(4, 'Quantum Cryptography Research', 'Building quantum-secure communication systems', 900000.00, 'Submitted', '2025-01-25', 1, 30, 'High'),
+(5, 'Nanomaterials for Clean Energy', 'Developing nanotech solutions for solar energy', 650000.00, 'Under Review', '2025-01-18', 4, 24, 'Medium');
+
+-- Insert Sample Reviewers
+INSERT INTO Reviewers (first_name, last_name, email, phone, institution, specialization, experience_years, rating, total_reviews) VALUES
+('Prof. Anita', 'Desai', 'anita.desai@reviewer.com', '9876543220', 'Stanford University', 'Machine Learning', 15, 4.8, 45),
+('Prof. Ravi', 'Mehta', 'ravi.mehta@reviewer.com', '9876543221', 'MIT', 'Biotechnology', 20, 4.9, 67),
+('Prof. Kavita', 'Iyer', 'kavita.iyer@reviewer.com', '9876543222', 'Oxford University', 'Robotics', 12, 4.7, 38),
+('Prof. Suresh', 'Nair', 'suresh.nair@reviewer.com', '9876543223', 'Cambridge University', 'Quantum Physics', 18, 4.9, 52),
+('Prof. Deepa', 'Joshi', 'deepa.joshi@reviewer.com', '9876543224', 'Harvard University', 'Nanotechnology', 14, 4.6, 41);
+
+-- ==========================================
+-- DATABASE SETUP COMPLETE!
+-- ==========================================
