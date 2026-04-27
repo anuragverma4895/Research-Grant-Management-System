@@ -183,7 +183,7 @@ INSERT INTO Funding_Agencies (agency_name, contact_email, contact_phone, address
 ('Bill & Melinda Gates Foundation', 'info@gatesfoundation.org', '+1-206-709-3100', 'Seattle, USA', 'Global Health', 'Private', 'https://gatesfoundation.org', 100000000.00);
 
 -- Insert Sample User Accounts (linked to researchers)
--- Password for all: User@123
+-- Password for all: password
 INSERT INTO Users (username, password, email, role, researcher_id) VALUES
 ('rajesh_kumar', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'rajesh.kumar@university.edu', 'user', 1),
 ('priya_sharma', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'priya.sharma@university.edu', 'user', 2),
