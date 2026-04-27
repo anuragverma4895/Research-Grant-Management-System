@@ -106,7 +106,7 @@ The **Research Grant Management System (RGMS)** is a comprehensive, digital solu
 
 | Role | Username | Password |
 | :--- | :--- | :--- |
-| **Admin** | `admin` *(Login via admin_login.php)* | `Anurag@2006` |
+| **Admin** | `admin` *(Login via admin_login.php)* | `Anurag@1123` |
 | **Researcher** | `rajesh_kumar` | `User@123` |
 | **Reviewer** | *(Create a new account via signup page)* | - |
 

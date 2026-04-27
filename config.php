@@ -35,7 +35,7 @@ define('APP_VERSION', '2.0.0');
 define('APP_URL', 'https://grant-management-system.infinityfreeapp.com');
 
 // Admin Password (hashed for security)
-define('ADMIN_PASSWORD', 'Anurag@2006');
+define('ADMIN_PASSWORD', 'Anurag@1123');
 
 // API Key for REST endpoints
 define('API_KEY', 'rgms_api_2025_secure_key');
