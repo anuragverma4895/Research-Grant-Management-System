@@ -29,7 +29,7 @@ if (isset($_SESSION['user_id'], $_SESSION['role'])) {
         .particle { position: absolute; border-radius: 50%; background: rgba(99, 102, 241, 0.3); pointer-events: none; }
     </style>
 </head>
-<body class="font-inter hero-gradient min-h-screen relative overflow-hidden">
+<body class="font-inter hero-gradient min-h-screen relative overflow-x-hidden">
     
     <!-- Animated Background Particles -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
@@ -54,10 +54,10 @@ if (isset($_SESSION['user_id'], $_SESSION['role'])) {
                 <span class="text-white font-bold text-lg hidden sm:block">RGMS</span>
             </div>
             <div class="flex items-center gap-3">
+                <a href="#features" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition-colors hidden md:block">Features</a>
+                <a href="#how-it-works" class="text-gray-400 hover:text-white px-3 py-2 text-sm font-medium transition-colors hidden md:block">How It Works</a>
                 <a href="login.php" class="text-gray-300 hover:text-white px-4 py-2 text-sm font-medium transition-colors">Login</a>
-                <a href="signup.php" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-full text-sm font-medium transition-all border border-white/10">
-                    Sign Up
-                </a>
+                <a href="signup.php" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2 rounded-full text-sm font-medium transition-all border border-white/10">Sign Up</a>
             </div>
         </nav>
 
@@ -152,12 +152,155 @@ if (isset($_SESSION['user_id'], $_SESSION['role'])) {
             </div>
         </main>
 
+        <!-- Features Section -->
+        <section class="px-6 lg:px-12 py-24 border-t border-white/5" id="features">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <span class="text-primary-400 text-sm font-semibold tracking-widest uppercase">What We Offer</span>
+                    <h2 class="text-3xl lg:text-5xl font-black text-white mt-3">Powerful Features</h2>
+                    <p class="text-gray-400 mt-4 max-w-xl mx-auto">Everything you need to manage research grants from submission to approval.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="glass-card rounded-2xl p-7 hover:bg-white/10 transition-all duration-300 group scroll-reveal">
+                        <div class="w-12 h-12 rounded-xl bg-primary-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+                        <h3 class="text-white font-bold text-lg mb-2">Online Applications</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Submit grant proposals digitally with PDF uploads, budget breakdowns, and project timelines.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-7 hover:bg-white/10 transition-all duration-300 group scroll-reveal">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg></div>
+                        <h3 class="text-white font-bold text-lg mb-2">Peer Review System</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Expert reviewers evaluate proposals with scoring rubrics and detailed recommendations.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-7 hover:bg-white/10 transition-all duration-300 group scroll-reveal">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
+                        <h3 class="text-white font-bold text-lg mb-2">Real-Time Analytics</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Interactive Chart.js dashboards showing funding trends, approval rates, and monthly reports.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-7 hover:bg-white/10 transition-all duration-300 group scroll-reveal">
+                        <div class="w-12 h-12 rounded-xl bg-rose-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><svg class="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></div>
+                        <h3 class="text-white font-bold text-lg mb-2">Role-Based Access</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Separate portals for Admins, Researchers, and Reviewers with dedicated dashboards and tools.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-7 hover:bg-white/10 transition-all duration-300 group scroll-reveal">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>
+                        <h3 class="text-white font-bold text-lg mb-2">Search & Filter</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Find any application instantly with powerful search by name, title, status, or funding agency.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-7 hover:bg-white/10 transition-all duration-300 group scroll-reveal">
+                        <div class="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg></div>
+                        <h3 class="text-white font-bold text-lg mb-2">REST API</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Built-in JSON API endpoints for external integrations with secure API key authentication.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="px-6 lg:px-12 py-24 border-t border-white/5" id="how-it-works">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-16">
+                    <span class="text-emerald-400 text-sm font-semibold tracking-widest uppercase">Simple Process</span>
+                    <h2 class="text-3xl lg:text-5xl font-black text-white mt-3">How It Works</h2>
+                    <p class="text-gray-400 mt-4 max-w-xl mx-auto">From application to approval — a streamlined 4-step process.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="text-center scroll-reveal">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center mx-auto mb-5 text-white text-2xl font-black shadow-lg shadow-primary-500/20">1</div>
+                        <h3 class="text-white font-bold mb-2">Register</h3>
+                        <p class="text-gray-400 text-sm">Create your researcher or reviewer account in seconds.</p>
+                    </div>
+                    <div class="text-center scroll-reveal">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center mx-auto mb-5 text-white text-2xl font-black shadow-lg shadow-emerald-500/20">2</div>
+                        <h3 class="text-white font-bold mb-2">Apply</h3>
+                        <p class="text-gray-400 text-sm">Submit your grant proposal with budget, timeline, and PDF uploads.</p>
+                    </div>
+                    <div class="text-center scroll-reveal">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-orange-700 flex items-center justify-center mx-auto mb-5 text-white text-2xl font-black shadow-lg shadow-amber-500/20">3</div>
+                        <h3 class="text-white font-bold mb-2">Review</h3>
+                        <p class="text-gray-400 text-sm">Expert reviewers evaluate and score your research proposal.</p>
+                    </div>
+                    <div class="text-center scroll-reveal">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-pink-700 flex items-center justify-center mx-auto mb-5 text-white text-2xl font-black shadow-lg shadow-rose-500/20">4</div>
+                        <h3 class="text-white font-bold mb-2">Get Funded</h3>
+                        <p class="text-gray-400 text-sm">Approved grants receive funding and track progress in real-time.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tech Stack -->
+        <section class="px-6 lg:px-12 py-24 border-t border-white/5" id="tech">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-16">
+                    <span class="text-rose-400 text-sm font-semibold tracking-widest uppercase">Built With</span>
+                    <h2 class="text-3xl lg:text-5xl font-black text-white mt-3">Technology Stack</h2>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <div class="glass-card rounded-2xl p-6 text-center hover:bg-white/10 transition-all scroll-reveal">
+                        <div class="text-3xl mb-3">🐘</div><p class="text-white font-bold text-sm">PHP 8.x</p><p class="text-gray-500 text-xs mt-1">Backend</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 text-center hover:bg-white/10 transition-all scroll-reveal">
+                        <div class="text-3xl mb-3">🗃️</div><p class="text-white font-bold text-sm">MySQL</p><p class="text-gray-500 text-xs mt-1">Database</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 text-center hover:bg-white/10 transition-all scroll-reveal">
+                        <div class="text-3xl mb-3">🎨</div><p class="text-white font-bold text-sm">Tailwind CSS</p><p class="text-gray-500 text-xs mt-1">Styling</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 text-center hover:bg-white/10 transition-all scroll-reveal">
+                        <div class="text-3xl mb-3">📊</div><p class="text-white font-bold text-sm">Chart.js</p><p class="text-gray-500 text-xs mt-1">Analytics</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 text-center hover:bg-white/10 transition-all scroll-reveal">
+                        <div class="text-3xl mb-3">🔗</div><p class="text-white font-bold text-sm">REST API</p><p class="text-gray-500 text-xs mt-1">Integration</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="px-6 lg:px-12 py-24 border-t border-white/5">
+            <div class="max-w-3xl mx-auto text-center scroll-reveal">
+                <h2 class="text-3xl lg:text-4xl font-black text-white mb-4">Ready to Get Started?</h2>
+                <p class="text-gray-400 mb-8 text-lg">Join researchers and institutions already using RGMS to manage their grants efficiently.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="signup.php" class="px-8 py-3.5 bg-gradient-to-r from-primary-500 to-accent-600 text-white rounded-full font-semibold text-sm hover:shadow-xl hover:shadow-primary-500/20 transition-all">Create Free Account</a>
+                    <a href="login.php" class="px-8 py-3.5 bg-white/5 border border-white/10 text-white rounded-full font-semibold text-sm hover:bg-white/10 transition-all">Login to Dashboard</a>
+                </div>
+            </div>
+        </section>
+
         <!-- Footer -->
-        <footer class="text-center py-6 px-6 border-t border-white/5">
-            <p class="text-gray-500 text-xs">&copy; <?php echo date('Y'); ?> <?php echo APP_NAME; ?> — Built by Anurag Verma</p>
+        <footer class="border-t border-white/5 px-6 lg:px-12 py-10">
+            <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    </div>
+                    <span class="text-white font-bold text-sm"><?php echo APP_NAME; ?></span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <a href="#features" class="text-gray-500 hover:text-white text-sm transition-colors">Features</a>
+                    <a href="#how-it-works" class="text-gray-500 hover:text-white text-sm transition-colors">How It Works</a>
+                    <a href="#tech" class="text-gray-500 hover:text-white text-sm transition-colors">Tech Stack</a>
+                </div>
+                <p class="text-gray-600 text-xs">&copy; <?php echo date('Y'); ?> Built by Anurag Verma</p>
+            </div>
         </footer>
     </div>
 
+    <script>
+    // Scroll Reveal Animation
+    const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if(e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; } });
+    }, {threshold:0.1});
+    document.querySelectorAll('.scroll-reveal').forEach(el => {
+        el.style.opacity='0'; el.style.transform='translateY(30px)';
+        el.style.transition='opacity 0.6s ease, transform 0.6s ease';
+        obs.observe(el);
+    });
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => { e.preventDefault(); document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth'}); });
+    });
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
