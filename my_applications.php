@@ -3,299 +3,158 @@ session_start();
 include "auth_check.php";
 requireUser();
 include "db_connection.php";
+require_once "functions.php";
 
 $user = getCurrentUser();
 $researcher_id = $user['researcher_id'];
 
-// Fetch all applications with agency details
-$applications = $conn->query("
-    SELECT ga.*, fa.agency_name, fa.funding_area 
-    FROM Grant_Applications ga 
-    JOIN Funding_Agencies fa ON ga.funding_agency_id = fa.funding_agency_id 
-    WHERE ga.researcher_id = $researcher_id 
-    ORDER BY ga.submission_date DESC
-");
+// Search & Filter
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$filter_status = isset($_GET['status']) ? trim($_GET['status']) : '';
+
+$where = "ga.researcher_id = ?";
+$params = [$researcher_id];
+$types = 'i';
+
+if ($search) {
+    $where .= " AND (ga.grant_title LIKE ? OR fa.agency_name LIKE ?)";
+    $s = "%$search%";
+    $params[] = $s;
+    $params[] = $s;
+    $types .= 'ss';
+}
+if ($filter_status && in_array($filter_status, ALLOWED_STATUSES)) {
+    $where .= " AND ga.application_status = ?";
+    $params[] = $filter_status;
+    $types .= 's';
+}
+
+$stmt = $conn->prepare("SELECT ga.*, fa.agency_name, fa.funding_area FROM Grant_Applications ga JOIN Funding_Agencies fa ON ga.funding_agency_id = fa.funding_agency_id WHERE $where ORDER BY ga.submission_date DESC");
+$stmt->bind_param($types, ...$params);
+$stmt->execute();
+$applications = $stmt->get_result();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Applications - RGMS</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
-        }
-
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .navbar h1 { font-size: 24px; }
-
-        .navbar-right {
-            display: flex;
-            gap: 15px;
-        }
-
-        .navbar a {
-            background: rgba(255,255,255,0.2);
-            padding: 8px 20px;
-            border-radius: 20px;
-            text-decoration: none;
-            color: white;
-            font-size: 14px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .page-header {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-
-        .page-header h2 {
-            font-size: 28px;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .applications-grid {
-            display: grid;
-            gap: 20px;
-        }
-
-        .application-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border-left: 5px solid #667eea;
-            transition: all 0.3s;
-        }
-
-        .application-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 15px;
-        }
-
-        .card-header h3 {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .application-id {
-            background: #667eea;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .card-meta {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 15px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-
-        .meta-item .icon {
-            font-size: 18px;
-        }
-
-        .meta-item .label {
-            color: #666;
-            font-weight: 600;
-        }
-
-        .card-description {
-            margin: 15px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-left: 3px solid #667eea;
-            border-radius: 5px;
-            font-size: 14px;
-            color: #555;
-            line-height: 1.6;
-        }
-
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 15px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .status-badge {
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .status-submitted { background: #fff3cd; color: #856404; }
-        .status-approved { background: #d4edda; color: #155724; }
-        .status-rejected { background: #f8d7da; color: #721c24; }
-        .status-under.review { background: #d1ecf1; color: #0c5460; }
-        .status-on.hold { background: #d6d8db; color: #383d41; }
-
-        .admin-comment {
-            margin-top: 10px;
-            padding: 10px;
-            background: #fff3cd;
-            border-left: 3px solid #ffc107;
-            border-radius: 5px;
-            font-size: 13px;
-        }
-
-        .admin-comment strong {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .no-applications {
-            text-align: center;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        .no-applications .icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-        }
-
-        .no-applications h3 {
-            font-size: 24px;
-            color: #666;
-            margin-bottom: 15px;
-        }
-
-        .no-applications a {
-            display: inline-block;
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            font-weight: 600;
-            margin-top: 15px;
-        }
-    </style>
+    <?php echo renderHead('My Applications'); ?>
 </head>
-<body>
-    <div class="navbar">
-        <h1>📋 My Applications</h1>
-        <div class="navbar-right">
-            <a href="user_dashboard.php">← Dashboard</a>
-            <a href="logout.php">Logout</a>
-        </div>
-    </div>
+<body class="font-inter bg-dark-900 text-white min-h-screen">
+    <?php echo renderSidebar('user', 'applications'); ?>
 
-    <div class="container">
-        <div class="page-header">
-            <h2>📊 All Your Grant Applications</h2>
-            <p style="color: #666;">Track and manage your submitted grant applications</p>
-        </div>
-
-        <div class="applications-grid">
-            <?php if ($applications->num_rows > 0): ?>
-                <?php while ($app = $applications->fetch_assoc()): ?>
-                <div class="application-card">
-                    <div class="card-header">
-                        <div>
-                            <h3><?php echo htmlspecialchars($app['grant_title']); ?></h3>
-                            <p style="color: #666; font-size: 13px;">🏢 <?php echo htmlspecialchars($app['agency_name']); ?></p>
-                        </div>
-                        <span class="application-id">#<?php echo $app['application_id']; ?></span>
-                    </div>
-
-                    <div class="card-meta">
-                        <div class="meta-item">
-                            <span class="icon">💰</span>
-                            <span><span class="label">Amount:</span> ₹<?php echo number_format($app['grant_amount_requested'], 2); ?></span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="icon">📅</span>
-                            <span><span class="label">Submitted:</span> <?php echo date('d M Y', strtotime($app['submission_date'])); ?></span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="icon">⏱️</span>
-                            <span><span class="label">Duration:</span> <?php echo $app['project_duration_months']; ?> months</span>
-                        </div>
-                        <div class="meta-item">
-                            <span class="icon">🎯</span>
-                            <span><span class="label">Priority:</span> <?php echo $app['priority_level']; ?></span>
-                        </div>
-                    </div>
-
-                    <div class="card-description">
-                        <strong>📝 Description:</strong><br>
-                        <?php echo nl2br(htmlspecialchars($app['grant_description'])); ?>
-                    </div>
-
-                    <?php if (!empty($app['admin_comments'])): ?>
-                    <div class="admin-comment">
-                        <strong>💬 Admin Comments:</strong>
-                        <?php echo nl2br(htmlspecialchars($app['admin_comments'])); ?>
-                    </div>
-                    <?php endif; ?>
-
-                    <div class="card-footer">
-                        <span class="status-badge status-<?php echo strtolower(str_replace(' ', '.', $app['application_status'])); ?>">
-                            <?php echo $app['application_status']; ?>
-                        </span>
-                        <span style="color: #999; font-size: 13px;">
-                            Updated: <?php echo date('d M Y, h:i A', strtotime($app['updated_at'])); ?>
-                        </span>
-                    </div>
+    <main class="lg:ml-64 min-h-screen">
+        <header class="bg-dark-800/50 backdrop-blur-xl border-b border-white/5 px-6 py-4 sticky top-0 z-30">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-white">My Applications</h2>
+                    <p class="text-gray-500 text-sm">Track your grant applications</p>
                 </div>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <div class="no-applications">
-                    <div class="icon">📄</div>
-                    <h3>No Applications Yet</h3>
-                    <p style="color: #999;">You haven't submitted any grant applications yet.</p>
-                    <a href="apply_grant.php">Submit Your First Application</a>
+            </div>
+        </header>
+
+        <div class="p-6 space-y-6">
+            <!-- Search & Filter -->
+            <form method="GET" class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="text" name="search" value="<?php echo clean($search); ?>" placeholder="Search by title or agency..."
+                        class="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none text-sm">
                 </div>
-            <?php endif; ?>
+                <select name="status" onchange="this.form.submit()"
+                    class="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-gray-300 focus:border-primary-500 focus:outline-none text-sm">
+                    <option value="">All Status</option>
+                    <?php foreach (ALLOWED_STATUSES as $s): ?>
+                        <option value="<?php echo $s; ?>" <?php echo $filter_status === $s ? 'selected' : ''; ?>><?php echo $s; ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <button type="submit" class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-medium transition-colors">Search</button>
+            </form>
+
+            <!-- Applications -->
+            <div class="space-y-4">
+                <?php if ($applications->num_rows > 0): ?>
+                    <?php while ($app = $applications->fetch_assoc()): ?>
+                    <div class="bg-dark-800/50 backdrop-blur-xl border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all">
+                        <div class="flex items-start justify-between gap-4 mb-4">
+                            <div class="flex-1">
+                                <h3 class="text-white font-bold text-lg"><?php echo clean($app['grant_title']); ?></h3>
+                                <p class="text-gray-500 text-sm mt-1"><?php echo clean($app['agency_name']); ?></p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="bg-primary-500/20 text-primary-400 px-3 py-1 rounded-full text-xs font-bold">#<?php echo $app['application_id']; ?></span>
+                                <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold border <?php echo getStatusClass($app['application_status']); ?>">
+                                    <?php echo $app['application_status']; ?>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                            <div class="bg-white/[0.02] rounded-lg p-3">
+                                <p class="text-gray-500 text-xs">Amount</p>
+                                <p class="text-white font-semibold text-sm"><?php echo formatCurrency($app['grant_amount_requested']); ?></p>
+                            </div>
+                            <div class="bg-white/[0.02] rounded-lg p-3">
+                                <p class="text-gray-500 text-xs">Submitted</p>
+                                <p class="text-white font-semibold text-sm"><?php echo formatDate($app['submission_date']); ?></p>
+                            </div>
+                            <div class="bg-white/[0.02] rounded-lg p-3">
+                                <p class="text-gray-500 text-xs">Duration</p>
+                                <p class="text-white font-semibold text-sm"><?php echo $app['project_duration_months'] ?? 'N/A'; ?> months</p>
+                            </div>
+                            <div class="bg-white/[0.02] rounded-lg p-3">
+                                <p class="text-gray-500 text-xs">Priority</p>
+                                <p class="text-white font-semibold text-sm"><?php echo $app['priority_level'] ?? 'Medium'; ?></p>
+                            </div>
+                        </div>
+
+                        <?php if (!empty($app['grant_description'])): ?>
+                        <div class="bg-white/[0.02] border-l-2 border-primary-500/30 rounded-r-lg p-3 mb-3">
+                            <p class="text-gray-400 text-sm leading-relaxed"><?php echo nl2br(clean(substr($app['grant_description'], 0, 200))); ?>...</p>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($app['documents_uploaded'])): ?>
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg class="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                            <a href="<?php echo clean($app['documents_uploaded']); ?>" target="_blank" class="text-primary-400 text-sm hover:underline">View Uploaded Proposal</a>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($app['admin_comments'])): ?>
+                        <div class="bg-amber-500/5 border border-amber-500/10 rounded-xl p-3">
+                            <p class="text-amber-400 text-xs font-semibold mb-1">Admin Comments:</p>
+                            <p class="text-gray-400 text-sm"><?php echo nl2br(clean($app['admin_comments'])); ?></p>
+                        </div>
+                        <?php endif; ?>
+
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
+                            <span class="text-gray-600 text-xs">Updated: <?php echo formatDateTime($app['updated_at']); ?></span>
+                        </div>
+                    </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <div class="bg-dark-800/50 border border-white/5 rounded-2xl p-12 text-center">
+                        <svg class="w-16 h-16 text-gray-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <h3 class="text-white font-bold text-xl mb-2">No Applications Yet</h3>
+                        <p class="text-gray-500 text-sm mb-6">Start your research journey by submitting a grant application.</p>
+                        <a href="apply_grant.php" class="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-primary-500 to-accent-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all">
+                            Apply for Grant
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        </a>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
-    </div>
+    </main>
+
+    <script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
+    </script>
+    <script src="script.js"></script>
 </body>
 </html>

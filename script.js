@@ -1,18 +1,15 @@
 // ==========================================
-// RESEARCH GRANT MANAGEMENT SYSTEM - JS
+// RESEARCH GRANT MANAGEMENT SYSTEM v2.0
+// Enhanced JavaScript
 // ==========================================
 
-// Wait for DOM to fully load
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // Initialize all features
     initFormValidation();
     initConfirmDialogs();
     initAutoHideAlerts();
-    initTableSearch();
-    initTooltips();
-    
-    console.log('✅ RGMS JavaScript Loaded Successfully');
+    initDropZone();
+    initSmoothAnimations();
+    console.log('✅ RGMS v2.0 Loaded');
 });
 
 // ==========================================
@@ -20,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // ==========================================
 function initFormValidation() {
     const forms = document.querySelectorAll('form');
-    
     forms.forEach(form => {
         form.addEventListener('submit', function(event) {
             const requiredFields = form.querySelectorAll('[required]');
@@ -29,15 +25,17 @@ function initFormValidation() {
             requiredFields.forEach(field => {
                 if (!field.value.trim()) {
                     isValid = false;
-                    field.style.borderColor = '#e74c3c';
+                    field.classList.add('border-red-500');
+                    field.classList.remove('border-white/10');
                 } else {
-                    field.style.borderColor = '#e0e0e0';
+                    field.classList.remove('border-red-500');
+                    field.classList.add('border-white/10');
                 }
             });
             
             if (!isValid) {
                 event.preventDefault();
-                showAlert('Please fill all required fields', 'error');
+                showToast('Please fill all required fields', 'error');
             }
         });
     });
@@ -47,24 +45,22 @@ function initFormValidation() {
 // CONFIRMATION DIALOGS
 // ==========================================
 function initConfirmDialogs() {
-    // Delete confirmations
     const deleteLinks = document.querySelectorAll('a[href*="delete"]');
     deleteLinks.forEach(link => {
         link.addEventListener('click', function(event) {
-            if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+            if (!confirm('Are you sure? This action cannot be undone.')) {
                 event.preventDefault();
             }
         });
     });
     
-    // Status update confirmations
     const statusForms = document.querySelectorAll('.update-form');
     statusForms.forEach(form => {
         form.addEventListener('submit', function(event) {
             const statusSelect = form.querySelector('select[name="application_status"]');
             if (statusSelect) {
                 const newStatus = statusSelect.value;
-                if (!confirm(`Are you sure you want to update the status to "${newStatus}"?`)) {
+                if (!confirm(`Update status to "${newStatus}"?`)) {
                     event.preventDefault();
                 }
             }
@@ -76,158 +72,111 @@ function initConfirmDialogs() {
 // AUTO-HIDE ALERTS
 // ==========================================
 function initAutoHideAlerts() {
-    const alerts = document.querySelectorAll('.alert');
-    
+    const alerts = document.querySelectorAll('[class*="bg-green-500/10"], [class*="bg-red-500/10"]');
     alerts.forEach(alert => {
+        if (alert.closest('form')) return; // Don't hide form errors
         setTimeout(() => {
-            alert.style.transition = 'opacity 0.5s ease';
+            alert.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
             alert.style.opacity = '0';
-            setTimeout(() => {
-                alert.remove();
-            }, 500);
-        }, 5000); // Hide after 5 seconds
+            alert.style.transform = 'translateY(-10px)';
+            setTimeout(() => alert.remove(), 500);
+        }, 5000);
     });
 }
 
 // ==========================================
-// TABLE SEARCH
+// FILE DROP ZONE
 // ==========================================
-function initTableSearch() {
-    const searchInputs = document.querySelectorAll('.table-search');
-    
-    searchInputs.forEach(input => {
-        input.addEventListener('keyup', function() {
-            const searchValue = this.value.toLowerCase();
-            const table = this.closest('.panel').querySelector('table');
-            const rows = table.querySelectorAll('tbody tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(searchValue)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+function initDropZone() {
+    const dropZone = document.getElementById('drop-zone');
+    if (!dropZone) return;
+
+    ['dragenter', 'dragover'].forEach(event => {
+        dropZone.addEventListener(event, (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
         });
+    });
+
+    ['dragleave', 'drop'].forEach(event => {
+        dropZone.addEventListener(event, (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        const fileInput = document.getElementById('proposal_pdf');
+        if (fileInput && files.length > 0) {
+            fileInput.files = files;
+            showFileName(fileInput);
+        }
     });
 }
 
 // ==========================================
-// TOOLTIPS
+// SMOOTH ANIMATIONS
 // ==========================================
-function initTooltips() {
-    const tooltipElements = document.querySelectorAll('[data-tooltip]');
-    
-    tooltipElements.forEach(element => {
-        element.addEventListener('mouseenter', function() {
-            const tooltipText = this.getAttribute('data-tooltip');
-            const tooltip = document.createElement('div');
-            tooltip.className = 'tooltip';
-            tooltip.textContent = tooltipText;
-            tooltip.style.cssText = `
-                position: absolute;
-                background: #333;
-                color: white;
-                padding: 8px 12px;
-                border-radius: 5px;
-                font-size: 12px;
-                z-index: 1000;
-                white-space: nowrap;
-            `;
-            document.body.appendChild(tooltip);
-            
-            const rect = this.getBoundingClientRect();
-            tooltip.style.top = (rect.top - tooltip.offsetHeight - 5) + 'px';
-            tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
-            
-            this._tooltip = tooltip;
-        });
-        
-        element.addEventListener('mouseleave', function() {
-            if (this._tooltip) {
-                this._tooltip.remove();
-                delete this._tooltip;
+function initSmoothAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
             }
         });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.bg-dark-800\\/50').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(10px)';
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        observer.observe(card);
     });
 }
 
 // ==========================================
-// SHOW ALERT FUNCTION
+// TOAST NOTIFICATIONS
 // ==========================================
-function showAlert(message, type = 'info') {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type}`;
-    alertDiv.textContent = message;
-    alertDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-        min-width: 300px;
-        animation: slideIn 0.3s ease;
-    `;
-    
-    document.body.appendChild(alertDiv);
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
     
     setTimeout(() => {
-        alertDiv.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => alertDiv.remove(), 300);
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
 
 // ==========================================
-// FORM FIELD VALIDATION HELPERS
+// FILE NAME DISPLAY
 // ==========================================
-function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-}
-
-function validatePhone(phone) {
-    const re = /^[0-9]{10}$/;
-    return re.test(phone.replace(/[\s-]/g, ''));
-}
-
-function validateAmount(amount) {
-    return !isNaN(amount) && parseFloat(amount) > 0;
-}
-
-// ==========================================
-// ANIMATIONS
-// ==========================================
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+function showFileName(input) {
+    const nameEl = document.getElementById('file-name');
+    if (nameEl && input.files.length > 0) {
+        nameEl.textContent = '📄 ' + input.files[0].name;
+        nameEl.classList.remove('hidden');
     }
-    
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
+}
+
+// ==========================================
+// SIDEBAR TOGGLE
+// ==========================================
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (sidebar) sidebar.classList.toggle('-translate-x-full');
+    if (overlay) overlay.classList.toggle('hidden');
+}
 
 // ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
-
-// Format currency
 function formatCurrency(amount) {
     return '₹' + parseFloat(amount).toLocaleString('en-IN', {
         minimumFractionDigits: 2,
@@ -235,13 +184,11 @@ function formatCurrency(amount) {
     });
 }
 
-// Format date
 function formatDate(dateString) {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('en-IN', options);
 }
 
-// Debounce function for search
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -253,63 +200,3 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
-
-console.log('🚀 All systems ready!');
-```
-
----
-
-## **📋 FINAL CHECKLIST - AB SAB COMPLETE HAI!**
-
-| File | Status | Description |
-|------|--------|-------------|
-| ✅ **index.php** | Complete | Landing page with 3 login options |
-| ✅ **login.php** | Complete | User login page |
-| ✅ **signup.php** | Complete | New user registration |
-| ✅ **admin_login.php** | Complete | Admin login (password only) |
-| ✅ **logout.php** | Complete | Logout handler |
-| ✅ **auth_check.php** | Complete | Session management |
-| ✅ **db_connection.php** | Complete | Database config |
-| ✅ **user_dashboard.php** | Complete | User dashboard (10+ features) |
-| ✅ **admin_dashboard.php** | Complete | Admin dashboard (10+ features) |
-| ✅ **apply_grant.php** | Complete | Grant application form |
-| ✅ **my_applications.php** | Complete | View user applications |
-| ✅ **manage_researchers.php** | Complete | Admin - manage researchers |
-| ✅ **manage_agencies.php** | Complete | Admin - manage agencies |
-| ✅ **style.css** | Complete | Professional CSS |
-| ✅ **script.js** | Complete | Enhanced JavaScript |
-| ✅ **SQL Database** | Complete | Full schema with sample data |
-
----
-
-## **🔐 ADMIN PASSWORD (YE CHAT ME HAI, PAGE PE NAHI DIKHEGA)**
-```
-Admin Password: AdminSecure@2025
-```
-
-**Testing Credentials:**
-- **Admin:** Password `AdminSecure@2025`
-- **Users:** Username `rajesh_kumar`, `priya_sharma`, etc. | Password `User@123`
-
----
-
-## **🚀 DEPLOYMENT STEPS**
-
-### **1. Upload sab files apne server pe:**
-```
-/public_html/
-├── index.php
-├── login.php
-├── signup.php
-├── admin_login.php
-├── logout.php
-├── auth_check.php
-├── db_connection.php
-├── user_dashboard.php
-├── admin_dashboard.php
-├── apply_grant.php
-├── my_applications.php
-├── manage_researchers.php
-├── manage_agencies.php
-├── style.css
-└── script.js

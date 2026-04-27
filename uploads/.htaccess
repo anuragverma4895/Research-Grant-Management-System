@@ -1,0 +1,15 @@
+# Deny all access to uploaded files directly
+# Only allow PDF downloads
+<FilesMatch "\.php$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Allow PDF files
+<FilesMatch "\.(pdf)$">
+    Order Deny,Allow
+    Allow from all
+</FilesMatch>
+
+# Prevent directory listing
+Options -Indexes

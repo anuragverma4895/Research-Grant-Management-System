@@ -1,21 +1,20 @@
 <?php
-// Database Configuration
-$servername = "sql100.infinityfree.com";
-$username   = "if0_40850986";
-$password   = "v5vVbqGRP7";
-$dbname     = "if0_40850986_grant_db";
+/**
+ * ============================================
+ * DATABASE CONNECTION (Secure)
+ * ============================================
+ */
+require_once __DIR__ . '/config.php';
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+// Create connection using constants from config
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
 // Check connection
 if ($conn->connect_error) {
-    die("Database Connection Failed: " . $conn->connect_error);
+    error_log("Database Connection Failed: " . $conn->connect_error);
+    die("Database Connection Failed. Please try again later.");
 }
 
 // Set charset to UTF-8
 $conn->set_charset("utf8mb4");
-
-// Optional: Set timezone
-date_default_timezone_set('Asia/Kolkata');
 ?>

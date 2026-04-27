@@ -1,9 +1,10 @@
 -- ==========================================
 -- RESEARCH GRANT MANAGEMENT SYSTEM DATABASE
+-- Version 2.0 - Enhanced Schema
 -- ==========================================
 
 -- Drop existing tables if any (OPTIONAL - use with caution)
--- DROP TABLE IF EXISTS Award_Payments, Grants, Grant_Reviews, Grant_Applications, Users, Reviewers, Funding_Agencies, Researchers;
+-- DROP TABLE IF EXISTS Award_Payments, Grants, Grant_Reviews, Grant_Applications, Notifications, Users, Reviewers, Funding_Agencies, Researchers;
 
 -- 1. Researchers Table
 CREATE TABLE IF NOT EXISTS Researchers (
@@ -35,13 +36,13 @@ CREATE TABLE IF NOT EXISTS Funding_Agencies (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 3. Users Table (Authentication)
+-- 3. Users Table (Authentication - supports admin, user, reviewer)
 CREATE TABLE IF NOT EXISTS Users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    role ENUM('admin', 'user') NOT NULL,
+    role ENUM('admin', 'user', 'reviewer') NOT NULL,
     researcher_id INT NULL,
     is_active TINYINT(1) DEFAULT 1,
     last_login TIMESTAMP NULL,
@@ -141,6 +142,27 @@ CREATE TABLE IF NOT EXISTS Notifications (
 );
 
 -- ==========================================
+-- PERFORMANCE INDEXES
+-- ==========================================
+CREATE INDEX idx_applications_researcher ON Grant_Applications(researcher_id);
+CREATE INDEX idx_applications_status ON Grant_Applications(application_status);
+CREATE INDEX idx_applications_agency ON Grant_Applications(funding_agency_id);
+CREATE INDEX idx_applications_date ON Grant_Applications(submission_date);
+CREATE INDEX idx_users_username ON Users(username);
+CREATE INDEX idx_users_role ON Users(role);
+CREATE INDEX idx_users_researcher ON Users(researcher_id);
+CREATE INDEX idx_notifications_user ON Notifications(user_id);
+CREATE INDEX idx_notifications_read ON Notifications(is_read);
+CREATE INDEX idx_grants_application ON Grants(application_id);
+CREATE INDEX idx_reviews_application ON Grant_Reviews(application_id);
+
+-- ==========================================
+-- UPDATE USERS TABLE TO SUPPORT REVIEWER ROLE
+-- Run this if your existing table uses ENUM('admin','user') only:
+-- ==========================================
+-- ALTER TABLE Users MODIFY COLUMN role ENUM('admin', 'user', 'reviewer') NOT NULL;
+
+-- ==========================================
 -- INSERT SAMPLE DATA
 -- ==========================================
 
@@ -159,11 +181,6 @@ INSERT INTO Funding_Agencies (agency_name, contact_email, contact_phone, address
 ('Council of Scientific & Industrial Research', 'csir@csir.res.in', '011-23710618', 'New Delhi, India', 'Industrial Research', 'Government', 'https://csir.res.in', 45000000.00),
 ('University Grants Commission', 'ugc@ugc.ac.in', '011-23604446', 'New Delhi, India', 'Higher Education', 'Government', 'https://ugc.ac.in', 25000000.00),
 ('Bill & Melinda Gates Foundation', 'info@gatesfoundation.org', '+1-206-709-3100', 'Seattle, USA', 'Global Health', 'Private', 'https://gatesfoundation.org', 100000000.00);
-
--- Insert Admin User
--- Password: AdminSecure@2025
-INSERT INTO Users (username, password, email, role) VALUES
-('admin', '$2y$10$vZ3zYQXqN5xH8oK9pL2wXe7K8FGHjN2mP4qRsT6uV8wX0yZ2aB4cD', 'admin@grantmanagement.com', 'admin');
 
 -- Insert Sample User Accounts (linked to researchers)
 -- Password for all: User@123
@@ -189,6 +206,12 @@ INSERT INTO Reviewers (first_name, last_name, email, phone, institution, special
 ('Prof. Kavita', 'Iyer', 'kavita.iyer@reviewer.com', '9876543222', 'Oxford University', 'Robotics', 12, 4.7, 38),
 ('Prof. Suresh', 'Nair', 'suresh.nair@reviewer.com', '9876543223', 'Cambridge University', 'Quantum Physics', 18, 4.9, 52),
 ('Prof. Deepa', 'Joshi', 'deepa.joshi@reviewer.com', '9876543224', 'Harvard University', 'Nanotechnology', 14, 4.6, 41);
+
+-- ==========================================
+-- IMPORTANT: Run this ALTER if upgrading from v1.0
+-- ==========================================
+-- ALTER TABLE Users MODIFY COLUMN role ENUM('admin', 'user', 'reviewer') NOT NULL;
+-- ALTER TABLE Grant_Applications ADD COLUMN documents_uploaded VARCHAR(500) AFTER admin_comments;
 
 -- ==========================================
 -- DATABASE SETUP COMPLETE!
