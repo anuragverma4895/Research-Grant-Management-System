@@ -117,8 +117,8 @@ if (isset($_SESSION['user_id'], $_SESSION['role'])) {
     </div>
 
     <div class="relative z-10 min-h-screen flex flex-col">
-        <!-- Navigation -->
-        <nav class="flex items-center justify-between px-6 lg:px-12 py-5 fade-in-up">
+        <!-- Navigation (Fixed Header) -->
+        <nav class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 lg:px-12 py-4 fade-in-up transition-all duration-300" id="main-nav" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.08);">
             <div class="flex items-center gap-3">
                 <div
                     class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center shadow-lg shadow-primary-500/20">
@@ -142,6 +142,8 @@ if (isset($_SESSION['user_id'], $_SESSION['role'])) {
                     Up</a>
             </div>
         </nav>
+        <!-- Spacer for fixed nav -->
+        <div class="h-[72px]"></div>
 
         <!-- Hero Section -->
         <main class="flex-1 flex items-center justify-center px-6 lg:px-12 py-12">
